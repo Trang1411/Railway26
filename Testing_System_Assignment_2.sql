@@ -75,3 +75,5 @@ CREATE TABLE ExamQuestion(
 Exam_id 			tinyint unsigned,
 Question_id 		tinyint unsigned
 );
+
+//
