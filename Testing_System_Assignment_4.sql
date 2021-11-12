@@ -1,6 +1,6 @@
-DROP DATABASE IF EXISTS TestingSystem3;
-CREATE DATABASE 	TestingSystem3;
-USE 				TestingSystem3;
+DROP DATABASE IF EXISTS TestingSystem4;
+CREATE DATABASE 	TestingSystem4;
+USE 				TestingSystem4;
 
 CREATE TABLE Department (
 	Department_id		TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -148,7 +148,7 @@ DROP TABLE IF EXISTS Answer;
 CREATE TABLE Answer(
 Answer_id 			TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 Content 			VARCHAR(50) NOT NULL,
-Question_id 		TINYINT UNSIGNED UNIQUE KEY,
+Question_id 		TINYINT UNSIGNED,
 isCorrect			ENUM('TRUE', 'FALES', 'UNKNOWN'),
 FOREIGN KEY (Question_id) REFERENCES Question (Question_id)
 );
@@ -158,11 +158,11 @@ VALUE
     ('Answert2', 2, 'FALES'		),
     ('Answer3', 3, 'UNKNOWN'	),
     ('Answer4', 4, 'TRUE'		),
-    ('Answer5', 5, 'FALES'		),
+    ('Answer5', 6, 'FALES'		),
     ('Answer6', 6, 'TRUE'		),
-    ('Answer7', 7, 'UNKNOWN'	),
+    ('Answer7', 8, 'UNKNOWN'	),
     ('Answer8', 8, 'TRUE'		),
-    ('Answer9', 9, 'FALES'		),
+    ('Answer9', 8, 'FALES'		),
     ('Answer15', 10, 'UNKNOWN'	);
 
 DROP TABLE IF EXISTS Exam;
@@ -247,3 +247,20 @@ FROM `Account`
 GROUP BY Department_id;
 
 -- Câu 5: Viết lệnh để lấy ra danh sách câu hỏi được sử dụng trong đề thi nhiều nhất 
+
+SELECT question.Question_id, COUNT(examquestion.Exam_id)
+FROM examquestion
+RIGHT JOIN question ON question.Question_id = examquestion.Question_id
+GROUP BY question.Question_id;
+
+-- Câu 6: Thông kê mỗi category Question được sử dụng trong bao nhiêu QuestioN
+SELECT Category_id, count(Category_id) AS 'SỐ LẦN SỬ DỤNG'
+FROM Question
+GROUP BY Category_id;
+
+-- Câu 7: Thông kê mỗi Question được sử dụng trong bao nhiêu Exam
+SELECT Question_id, COUNT(Question_id) AS 'SỐ LẦN SỬ DỤNG'
+FROM examquestion
+GROUP BY Question_id;
+
+-- Câu 8: Lấy ra Question có nhiều câu trả lời nhất
