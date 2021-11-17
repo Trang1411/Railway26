@@ -24,23 +24,27 @@ CREATE VIEW LENGTH_QUESTION AS
 							WHERE length(Content) >90);
 
 -- Câu 4:   Tạo view có chứa danh sách các phòng ban có nhiều nhân viên nhất
-DROP VIEW IF EXISTS LIST_ACC_DEP;
-CREATE VIEW LIST_ACC_DEP AS
-	SELECT AC.Department_id, D.Department_name, count(Account_id) AS COUNT_ACC
-	FROM `account` AC
-	JOIN department D ON AC.Department_id = D.Department_id
-	GROUP BY Department_id;
+
 -- VIEW DANH SÁCH CHỨA CÁC PHÒNG BAN CÓ NHIỀU NHÂN VIÊN NHẤT 
+DROP VIEW IF EXISTS DEPARTMENT_MAX_ACC;
 CREATE VIEW DEPARTMENT_MAX_ACC AS
 	SELECT  *
 	FROM `account` 
 	GROUP BY Department_id
-	HAVING COUNT(Department_id) = (SELECT MAX(COUNT_ACC) 
-								FROM LIST_ACC_DEP);
+	HAVING COUNT(Department_id) = (	SELECT MAX(COUNT_ACC) 
+									FROM (SELECT count(Account_id) AS COUNT_ACC
+										FROM `account` 
+										GROUP BY Department_id) AB);
 -- Câu 5:  Tạo view có chứa tất các các câu hỏi do user họ Nguyễn tạo
+DROP VIEW IF EXISTS Q_CREATE_BY_NGUYEN ;
 CREATE VIEW Q_CREATE_BY_NGUYEN AS 
 	SELECT Q.Question_id, Q.Content, AC.FullName
 	FROM question Q
 	JOIN `account` AC ON Q.Creator_id = AC.Account_id
-	WHERE FullName LIKE 'Nguyen%'
-
+	WHERE FullName LIKE 'Nguyen%';
+-- Cách khác
+SELECT Q.Question_id, Q.Content
+	FROM question Q
+	WHERE Creator_id IN ( SELECT Account_id
+								FROM `Account`
+                                WHERE FullName LIKE 'Nguyen%');

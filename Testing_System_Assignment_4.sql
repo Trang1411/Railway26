@@ -67,7 +67,7 @@ CREATE TABLE `Group`(
 Group_id 			TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 GroupName			VARCHAR(50) UNIQUE KEY,
 Creator_id 			TINYINT UNSIGNED UNIQUE KEY,
-CreateDate 			DATE,
+CreateDate 			DATE DEFAULT NOW(),
 FOREIGN KEY (Creator_id) REFERENCES  `Account`(Account_id)
 );
 INSERT INTO  `Group`(GroupName, Creator_id, CreateDate)
@@ -79,23 +79,31 @@ VALUE
 	('G05',5,20211106	),
 	('G06',6,20211102	),
     ('G07',7,20211106	);
-    
+ 
+ DROP TABLE IF EXISTS GroupAcount;
 CREATE TABLE GroupAcount (
-Group_id 			TINYINT UNSIGNED AUTO_INCREMENT,
+Group_id 			TINYINT UNSIGNED,
 Account_id			TINYINT UNSIGNED NULL,
 JoinDate 			DATE,
 FOREIGN KEY (Account_id) REFERENCES `Account`(Account_id),
 FOREIGN KEY (Group_id ) REFERENCES  `Group`(Group_id )
 );
-INSERT INTO GroupAcount (Account_id, JoinDate)
+INSERT INTO GroupAcount (Group_id,Account_id, JoinDate)
 VALUE 
-	(1,20201102		),
-    (3,20201101		),
-    (6,20201105		),
-    (6,20201108		),
-    (8,20211106		),
-    (5,20211102		),
-    (5,20211106		);
+	(1,1,20201102		),
+    (2,2,20201101		),
+    (3,3,20201105		),
+    (4,4,20201108		),
+    (5,5,20211106		),
+    (6,7,20211102		),
+    (6,8,20211102		),
+    (3,6,20201105		),
+    (4,9,20201108		),
+    (5,10,20211106		),
+    (6,12,20211102		),
+	(5,13,20211106		),
+    (6,12,20211102		),
+    (7,5,20211106		);
     
 CREATE TABLE TypeQuestion (
 Type_id 			TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -133,6 +141,8 @@ CreateDate 			DATE NOT NULL,
 FOREIGN KEY (Category_id) REFERENCES CategoryQuestion (Category_id),
 FOREIGN KEY (Type_id) REFERENCES TypeQuestion (Type_id),
 FOREIGN KEY (Creator_id) REFERENCES  `Account`(Account_id)
+ON UPDATE CASCADE
+ON DELETE CASCADE
 );
 INSERT INTO Question(Content, Category_id, Type_id, Creator_id, CreateDate)
 VALUE
@@ -179,6 +189,7 @@ Creator_id 			TINYINT UNSIGNED,
 CreateDate 			DATE,
 FOREIGN KEY(Category_id) REFERENCES CategoryQuestion(Category_id),
 FOREIGN KEY (Creator_id) REFERENCES `Account`(Account_id)
+ON DELETE CASCADE
 );
 INSERT INTO Exam (`Code`, Title, Category_id, Duration, Creator_id, CreateDate)
 VALUE 
@@ -197,7 +208,7 @@ DROP TABLE IF EXISTS ExamQuestion;
 CREATE TABLE ExamQuestion(
 Exam_id 			TINYINT UNSIGNED ,
 Question_id 		TINYINT UNSIGNED,
-FOREIGN KEY (Exam_id) REFERENCES Exam (Exam_id),
+FOREIGN KEY (Exam_id) REFERENCES Exam (Exam_id) ON DELETE CASCADE,
 FOREIGN KEY(Question_id) REFERENCES Question (Question_id)
 );
 INSERT INTO ExamQuestion (Exam_id, Question_id )
