@@ -256,9 +256,11 @@ FROM `Account`, position
 WHERE  `Account`.Position_id = position.Position_id AND Position_name = 'Dev';
 
 -- Câu 4:  Viết lệnh để lấy ra danh sách các phòng ban có >3 nhân viên
-SELECT Department_id, COUNT(*) AS TONG_SO_NHAN_VIEN
-FROM `Account`
-GROUP BY Department_id;
+SELECT D.Department_id, D.Department_name, COUNT(*) AS TONG_SO_NHAN_VIEN
+FROM `Account` AC 
+JOIN Department D ON AC.Department_id = D.Department_id
+GROUP BY Department_id
+HAVING COUNT(AC.Department_id) >=3;
 
 -- Câu 5: Viết lệnh để lấy ra danh sách câu hỏi được sử dụng trong đề thi nhiều nhất 
 SELECT Question_id AS 'CÂU HỎI ĐƯỢC DÙNG NHIỀU NHẤT'
@@ -268,6 +270,15 @@ HAVING COUNT(Question_id) = (	SELECT  MAX(ABC)
 								FROM (	SELECT Question_id, COUNT(Question_id) AS 'ABC'
 									FROM examquestion
 									GROUP BY Question_id)AB);
+-- Lấy ra content 
+SELECT  EQ.Question_id, Q.Content
+FROM examquestion EQ
+JOIN Question Q ON EQ.Question_id = Q.Question_id
+GROUP BY EQ.Question_id
+HAVING COUNT(EQ.Question_id) = (SELECT MAX(DEM_Q)
+								FROM (	SELECT Question_id, COUNT(Exam_id) AS DEM_Q
+										FROM examquestion
+										GROUP BY Question_id) AB);
 
 -- Câu 6: Thông kê mỗi category Question được sử dụng trong bao nhiêu QuestioN
 SELECT Category_id, count(Category_id) AS 'SỐ LẦN SỬ DỤNG'
@@ -305,6 +316,16 @@ SELECT Group_id, COUNT(Account_id) AS "Số lượng Account"
 FROM groupacount
 GROUP BY Account_id;
 
+-- Câu 10:
+SELECT P.Position_name
+FROM position P 
+JOIN `account` AC ON P.Position_id = AC.Position_id
+GROUP BY AC.Position_id
+HAVING COUNT(AC.Position_id) = (SELECT MIN(COUNT_ACC)
+								FROM (	SELECT Position_id, COUNT(Account_id) AS COUNT_ACC
+										FROM `account`
+										GROUP BY Position_id) AB)
+ ;
 -- Câu 11: Thống kê mỗi phòng ban có bao nhiêu Dev, Test, Scrum Master, PM
 SELECT AC.Department_id,  D.Department_name, P.Position_name, count(AC.department_id)
 FROM `Account` AC

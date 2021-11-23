@@ -1,11 +1,14 @@
 USE 	TestingSystem4;
 -- Câu 1: Tạo view có chứa danh sách nhân viên thuộc phòng ban Sale
+DROP VIEW IF EXISTS Department_sale;
 CREATE VIEW Department_sale AS
 	 SELECT AC.*, D.Department_name
 	 FROM `account` AC 
 	 JOIN department D ON AC.Department_id = D.Department_id
 	 WHERE Department_name = 'sale';
 -- Câu 2: Tạo view có chứa thông tin các account tham gia vào nhiều group nhất
+
+DROP VIEW IF EXISTS ACCOUNT_JOIN_MAX_GROUP;
 CREATE VIEW ACCOUNT_JOIN_MAX_GROUP AS
 	SELECT * 
 	FROM `account`
@@ -19,9 +22,26 @@ DROP VIEW IF EXISTS LENGTH_QUESTION ;
 CREATE VIEW LENGTH_QUESTION AS
 	SELECT *
 	FROM question
-	WHERE Question_id IN (SELECT Question_id
+	WHERE Question_id IN (	SELECT Question_id
 							FROM question
 							WHERE length(Content) >90);
+                            
+DROP VIEW IF EXISTS LENGTH_QUESTION_2 ;    
+                                                   
+CREATE VIEW LENGTH_QUESTION_2 AS
+	SELECT	Question_id
+    FROM	question
+    WHERE	length(Content) >90;
+    
+	SELECT *
+    FROM LENGTH_QUESTION;
+    
+    SELECT *
+    FROM LENGTH_QUESTION_2;
+    
+    DELETE FROM question
+    WHERE Question_id IN ( 	SELECT Question_id
+							FROM LENGTH_QUESTION_2);
 
 -- Câu 4:   Tạo view có chứa danh sách các phòng ban có nhiều nhân viên nhất
 
@@ -48,3 +68,15 @@ SELECT Q.Question_id, Q.Content
 	WHERE Creator_id IN ( SELECT Account_id
 								FROM `Account`
                                 WHERE FullName LIKE 'Nguyen%');
+
+
+DROP VIEW IF EXISTS v_question;
+CREATE VIEW v_question AS
+SELECT *
+FROM question 
+WHERE creator_id = ANY (SELECT account_id  -- câu này cũng có thể dùng IN
+						FROM account
+							WHERE fullname LIKE 'Nguyễn%');
+SELECT * FROM v_question;
+
+

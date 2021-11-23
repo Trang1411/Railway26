@@ -204,8 +204,7 @@ END$$
 DELIMITER ;
 CALL DELETE_EXAM(3);
 
-
-
-
+-- câu 10: 
+SELECT 
 
  
