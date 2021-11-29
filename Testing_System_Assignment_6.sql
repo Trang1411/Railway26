@@ -204,7 +204,47 @@ END$$
 DELIMITER ;
 CALL DELETE_EXAM(3);
 
--- câu 10: 
-SELECT 
+ -- Câu 10: Tìm ra các exam được tạo từ 3 năm trước và xóa các exam đó đi (sử
+-- dụng store ở câu 9 để xóa)
+-- Sau đó in số lượng record đã remove từ các table liên quan trong khi
+-- removing
+DELIMITER $$
+DROP PROCEDURE IF EXISTS loopWhile$$
+CREATE PROCEDURE loopWhile(OUT IN_Exam_id INT)
+BEGIN
+		SELECT Exam_id  INTO IN_Exam_id
+		FROM Exam
+		WHERE year(CreateDate)  <= year(now())-3
+        LIMIT 1;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS loopWhile1$$
+
+CREATE PROCEDURE loopWhile1()
+BEGIN
+		DECLARE quantity INT;
+        SET quantity = 0;
+		SET @IN_Exam_id = '';
+		CALL loopWhile(@IN_Exam_id);
+		-- SELECT @ID;
+		WHILE (@IN_Exam_id IS NOT NULL) DO
+			
+			CALL loopWhile(@IN_Exam_id);
+			
+            CALL Del_Exam(@IN_Exam_id);
+           
+            
+        END WHILE;
+	
+		
+END$$
+DELIMITER ;
+SET @quantity = '';
+CALL loopWhile1();
+SELECT @quantity;
+SELECT * FROM Exam;
 
  

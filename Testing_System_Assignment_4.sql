@@ -67,7 +67,7 @@ CREATE TABLE `Group`(
 Group_id 			TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 GroupName			VARCHAR(50) UNIQUE KEY,
 Creator_id 			TINYINT UNSIGNED UNIQUE KEY,
-CreateDate 			DATE DEFAULT NOW(),
+CreateDate 			DATE,
 FOREIGN KEY (Creator_id) REFERENCES  `Account`(Account_id)
 );
 INSERT INTO  `Group`(GroupName, Creator_id, CreateDate)
@@ -79,31 +79,23 @@ VALUE
 	('G05',5,20211106	),
 	('G06',6,20211102	),
     ('G07',7,20211106	);
- 
- DROP TABLE IF EXISTS GroupAcount;
+    
 CREATE TABLE GroupAcount (
-Group_id 			TINYINT UNSIGNED,
+Group_id 			TINYINT UNSIGNED AUTO_INCREMENT,
 Account_id			TINYINT UNSIGNED NULL,
 JoinDate 			DATE,
 FOREIGN KEY (Account_id) REFERENCES `Account`(Account_id),
 FOREIGN KEY (Group_id ) REFERENCES  `Group`(Group_id )
 );
-INSERT INTO GroupAcount (Group_id,Account_id, JoinDate)
+INSERT INTO GroupAcount (Account_id, JoinDate)
 VALUE 
-	(1,1,20201102		),
-    (2,2,20201101		),
-    (3,3,20201105		),
-    (4,4,20201108		),
-    (5,5,20211106		),
-    (6,7,20211102		),
-    (6,8,20211102		),
-    (3,6,20201105		),
-    (4,9,20201108		),
-    (5,10,20211106		),
-    (6,12,20211102		),
-	(5,13,20211106		),
-    (6,12,20211102		),
-    (7,5,20211106		);
+	(1,20201102		),
+    (3,20201101		),
+    (6,20201105		),
+    (6,20201108		),
+    (8,20211106		),
+    (5,20211102		),
+    (5,20211106		);
     
 CREATE TABLE TypeQuestion (
 Type_id 			TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -141,8 +133,6 @@ CreateDate 			DATE NOT NULL,
 FOREIGN KEY (Category_id) REFERENCES CategoryQuestion (Category_id),
 FOREIGN KEY (Type_id) REFERENCES TypeQuestion (Type_id),
 FOREIGN KEY (Creator_id) REFERENCES  `Account`(Account_id)
-ON UPDATE CASCADE
-ON DELETE CASCADE
 );
 INSERT INTO Question(Content, Category_id, Type_id, Creator_id, CreateDate)
 VALUE
@@ -189,7 +179,6 @@ Creator_id 			TINYINT UNSIGNED,
 CreateDate 			DATE,
 FOREIGN KEY(Category_id) REFERENCES CategoryQuestion(Category_id),
 FOREIGN KEY (Creator_id) REFERENCES `Account`(Account_id)
-ON DELETE CASCADE
 );
 INSERT INTO Exam (`Code`, Title, Category_id, Duration, Creator_id, CreateDate)
 VALUE 
@@ -208,7 +197,7 @@ DROP TABLE IF EXISTS ExamQuestion;
 CREATE TABLE ExamQuestion(
 Exam_id 			TINYINT UNSIGNED ,
 Question_id 		TINYINT UNSIGNED,
-FOREIGN KEY (Exam_id) REFERENCES Exam (Exam_id) ON DELETE CASCADE,
+FOREIGN KEY (Exam_id) REFERENCES Exam (Exam_id),
 FOREIGN KEY(Question_id) REFERENCES Question (Question_id)
 );
 INSERT INTO ExamQuestion (Exam_id, Question_id )
@@ -256,11 +245,9 @@ FROM `Account`, position
 WHERE  `Account`.Position_id = position.Position_id AND Position_name = 'Dev';
 
 -- Câu 4:  Viết lệnh để lấy ra danh sách các phòng ban có >3 nhân viên
-SELECT D.Department_id, D.Department_name, COUNT(*) AS TONG_SO_NHAN_VIEN
-FROM `Account` AC 
-JOIN Department D ON AC.Department_id = D.Department_id
-GROUP BY Department_id
-HAVING COUNT(AC.Department_id) >=3;
+SELECT Department_id, COUNT(*) AS TONG_SO_NHAN_VIEN
+FROM `Account`
+GROUP BY Department_id;
 
 -- Câu 5: Viết lệnh để lấy ra danh sách câu hỏi được sử dụng trong đề thi nhiều nhất 
 SELECT Question_id AS 'CÂU HỎI ĐƯỢC DÙNG NHIỀU NHẤT'
@@ -270,15 +257,6 @@ HAVING COUNT(Question_id) = (	SELECT  MAX(ABC)
 								FROM (	SELECT Question_id, COUNT(Question_id) AS 'ABC'
 									FROM examquestion
 									GROUP BY Question_id)AB);
--- Lấy ra content 
-SELECT  EQ.Question_id, Q.Content
-FROM examquestion EQ
-JOIN Question Q ON EQ.Question_id = Q.Question_id
-GROUP BY EQ.Question_id
-HAVING COUNT(EQ.Question_id) = (SELECT MAX(DEM_Q)
-								FROM (	SELECT Question_id, COUNT(Exam_id) AS DEM_Q
-										FROM examquestion
-										GROUP BY Question_id) AB);
 
 -- Câu 6: Thông kê mỗi category Question được sử dụng trong bao nhiêu QuestioN
 SELECT Category_id, count(Category_id) AS 'SỐ LẦN SỬ DỤNG'
@@ -292,40 +270,43 @@ GROUP BY Question_id;
 
 -- Câu 8: Lấy ra Question có nhiều câu trả lời nhất
  -- lấy ra số câu trả lời mỗi question 
-	SELECT count(Question_id) AS ABC
+ DROP VIEW IF EXISTS CountQ;
+ CREATE VIEW CountQ AS
+	SELECT count(Question_id) AS 'SO_CAU_TRA_LOI'
 	FROM answer
 	GROUP BY Question_id;
 -- lấy ra số lượng câu trả lời nhiều nhất 
-SELECT MAX(ABC)
-FROM (
-	SELECT Question_id, count(Question_id) AS ABC
-	FROM answer
-	GROUP BY Question_id
-	)AB;
+SELECT MAX(SO_CAU_TRA_LOI)
+FROM CountQ;
+
 -- trả lời câu 8
-SELECT Question_id AS "Question có nhiều câu trả lời nhất"
+SELECT Question_id AS "TOPQuestion"
 FROM answer
 GROUP BY Question_id
-HAVING  count(Question_id) = (	SELECT MAX(ABC)
-								FROM (SELECT Question_id, count(Question_id) AS ABC
-									FROM answer
-									GROUP BY Question_id)AB );
+HAVING  count(Question_id) = (SELECT MAX(SO_CAU_TRA_LOI)
+								FROM CountQ);
 
 -- Câu 9: Thống kê số lượng Account trong mỗi Group
 SELECT Group_id, COUNT(Account_id) AS "Số lượng Account"
 FROM groupacount
 GROUP BY Account_id;
 
--- Câu 10:
-SELECT P.Position_name
-FROM position P 
-JOIN `account` AC ON P.Position_id = AC.Position_id
-GROUP BY AC.Position_id
-HAVING COUNT(AC.Position_id) = (SELECT MIN(COUNT_ACC)
-								FROM (	SELECT Position_id, COUNT(Account_id) AS COUNT_ACC
-										FROM `account`
-										GROUP BY Position_id) AB)
- ;
+-- Câu 10: Tìm chức vụ có ít người nhất
+-- Tạo view
+CREATE VIEW SLMIN_P AS
+SELECT P.Position_id, (COUNT(A.Account_id)) AS SLMIN
+										FROM `Position` P
+										INNER JOIN `Account` A ON P.Position_id = A.Position_id
+										GROUP BY P.Position_id
+										HAVING  COUNT(A.Account_id);
+-- sử dụng view
+SELECT P.Position_id, P.Position_name, COUNT(A.Account_id) AS 'SỐ NGƯỜI'
+FROM `Position` P
+INNER JOIN `Account` A ON P.Position_id = A.Position_id
+GROUP BY P.Position_id
+HAVING  COUNT(A.Account_id) = (SELECT MIN(SLMIN)
+								FROM SLMIN_P);
+                                                            
 -- Câu 11: Thống kê mỗi phòng ban có bao nhiêu Dev, Test, Scrum Master, PM
 SELECT AC.Department_id,  D.Department_name, P.Position_name, count(AC.department_id)
 FROM `Account` AC
@@ -350,4 +331,27 @@ WHERE TQ.TypeName ='Essay' OR TQ.TypeName = 'Multiple-Choice'
 GROUP BY TQ.Type_id
 HAVING COUNT(TQ.Type_id);
 
--- Câu 14: 
+-- Câu 14: Lấy ra group không có account nào
+ SELECT Group_id
+FROM groupacount
+WHERE Account_id IS NULL;
+
+-- Câu 16: Lấy ra question không có answer nào
+SELECT Q.Question_id, Q.Content AS NO_ANSWER
+FROM answer A 
+RIGHT JOIN Question Q ON A.Question_id =  Q.Question_id
+WHERE A.Content IS NULL;
+
+-- Câu 17: 
+-- a) Lấy các account thuộc nhóm thứ 1
+SELECT Account_id
+FROM groupacount
+WHERE Group_id = 1;
+
+SELECT Account_id
+FROM groupacount
+WHERE Group_id = 2; 
+
+SELECT Account_id, Group_id 
+FROM groupacount
+WHERE Group_id = 3 OR Group_id = 4 OR Group_id = 2
